@@ -1,3 +1,4 @@
+const db = require('../util/database');
 const fs = require('fs');
 const path = require('path');
 
@@ -29,22 +30,7 @@ module.exports = class Product {
   }
 
   save() {
-    getProductsFromFile(products => {
-      if (this.id) {
-        const existingProductIndex = products.findIndex(prod => prod.id === this.id);
-        const updatedProducts = [...products];
-        updatedProducts[existingProductIndex] = this;
-        fs.writeFile(p, JSON.stringify(updatedProducts), err => {
-          console.log(err);
-        });
-      } else {
-        this.id = Math.random().toString();
-        products.push(this);
-        fs.writeFile(p, JSON.stringify(products), err => {
-          console.log(err);
-        });
-      }
-    });
+    return db.execute('INSERT INTO products (title, price, imageUrl, description) VALUES (?, ?, ?, ?)', [this.title, this.price, this.imageUrl, this.description])
   }
 
   static deleteById(id) {
@@ -60,13 +46,10 @@ module.exports = class Product {
   }
 
   static fetchAll(cb) {
-    getProductsFromFile(cb);
+    return db.execute('SELECT * FROM products');
   }
 
   static findById(id, cb) {
-    getProductsFromFile(products => {
-      const product = products.find(product => product.id === id);
-      cb(product);
-    })
+    return db.execute('SELECT * FROM products WHERE products.id = ?', [id])
   }
 };
